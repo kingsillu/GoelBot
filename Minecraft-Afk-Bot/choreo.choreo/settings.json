@@ -1,0 +1,49 @@
+{
+  "bot-account": {
+    "username": "SilluBot45",
+    "password": "",
+    "type": "mojang"
+  },
+
+  "server": {
+    "ip": "aksmpgod.aternos.me",
+    "port": 36302,
+    "version": "1.12.1"
+  },
+  
+  "position": {
+    "enabled": false,
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+
+  "utils": {
+    "auto-auth": {
+      "enabled": true,
+      "password": "pass123"
+    },
+
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true
+    },
+
+    "chat-messages": {
+      "enabled": true,
+      "repeat": false,
+      "repeat-delay": 10,
+
+      "messages": [
+        "Yo",
+        "Bot Give Acces Of Op To Aternos Fast 2 minutes left",
+        "Leave Alone"
+      ]
+    },
+
+    "chat-log": true,
+    "auto-reconnect": true,
+    "auto-recconect-delay": 1000
+  
+  }
+}

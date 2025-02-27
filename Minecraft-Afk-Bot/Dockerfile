@@ -1,20 +1,20 @@
-# Use official Node.js image
+# Base image (Node.js 18)
 FROM node:18
 
-# Set working directory
+# Work directory set karo
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Package files copy karo
+COPY package.json package-lock.json ./
 
-# Install dependencies
+# Dependencies install karo
 RUN npm install
 
-# Copy bot files
+# Baaki sabhi files copy karo
 COPY . .
 
-# Expose port 8000 for express server
+# Expose port (Agar web server bhi run ho raha hai)
 EXPOSE 8000
 
-# Start the bot
+# Bot start command
 CMD ["node", "index.js"]

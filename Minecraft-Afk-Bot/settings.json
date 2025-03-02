@@ -6,8 +6,8 @@
   },
 
   "server": {
-    "ip": "arnavgoel78.aternos.me",
-    "port": 20918,
+    "ip": "sillu.aternos.me",
+    "port": 36486,
     "version": "1.12.1"
   },
   
@@ -35,9 +35,9 @@
       "repeat-delay": 10,
 
       "messages": [
-        "Bot Should Be In Cage",
-        "Access Should be Given To Kingsillu Aur Pls Discord Pe Batado Ki Bot Randomly Move kar Raha Hai",
-        "This Bot Is Too Advenced Than Armabh Bot (Kyunki Goel Ne Mujhpe Viswas karke Server Ka Acces Diye Sot Thanku Goel)"
+        "",
+        "",
+        ""
       ]
     },
 

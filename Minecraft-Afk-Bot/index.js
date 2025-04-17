@@ -7,20 +7,22 @@ const express = require('express');
 
 const app = express();
 
-// Express server to keep bot alive in Replit
+// Express server to keep bot alive in Choreo
 app.get('/', (req, res) => {
   res.send('Bot is running!');
 });
 
-app.listen(3000, () => {
-  console.log('[SERVER] Express server started on port 3000');
+// ✅ Use PORT from environment (for Choreo or other hosts)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`[SERVER] Express server started on port ${PORT}`);
 });
 
 function createBot() {
   const bot = mineflayer.createBot({
     username: config['bot-account']['username'],
     password: config['bot-account']['password'],
-    auth: config['bot-account']['type'], 
+    auth: config['bot-account']['type'],
     host: config.server.ip,
     port: config.server.port,
     version: config.server.version,
@@ -62,12 +64,11 @@ function createBot() {
       }
     }
 
-    // ✅ Anti-AFK System (Logs Removed)
+    // ✅ Anti-AFK System
     if (config.utils['anti-afk'].enabled) {
       setInterval(() => {
         bot.setControlState('jump', true);
         setTimeout(() => bot.setControlState('jump', false), 500);
-        
         const directions = ['forward', 'back', 'left', 'right'];
         const randomDir = directions[Math.floor(Math.random() * directions.length)];
         bot.setControlState(randomDir, true);
@@ -75,7 +76,7 @@ function createBot() {
       }, 15000);
     }
 
-    // ✅ Random Movement (Logs Removed)
+    // ✅ Random Movement
     function moveRandomly() {
       const x = bot.entity.position.x + (Math.random() * 6 - 3);
       const z = bot.entity.position.z + (Math.random() * 6 - 3);
@@ -83,7 +84,7 @@ function createBot() {
     }
     setInterval(moveRandomly, 30000);
 
-    // ✅ Move to a Specific Position (Logs Removed)
+    // ✅ Move to a Specific Position
     if (config.position.enabled) {
       const pos = config.position;
       bot.pathfinder.setMovements(defaultMove);
@@ -98,7 +99,6 @@ function createBot() {
     }
   });
 
-  // ✅ Goal Reached Notification (Log Removed)
   bot.on('goal_reached', () => {});
 
   // ✅ Bot Death Event

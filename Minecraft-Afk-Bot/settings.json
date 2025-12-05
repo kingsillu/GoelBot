@@ -10,7 +10,7 @@
     "port": 34282,
     "version": "1.12.1"
   },
-  
+
   "position": {
     "enabled": false,
     "x": 0,
@@ -30,20 +30,15 @@
     },
 
     "chat-messages": {
-      "enabled": true,
+      "enabled": false,
       "repeat": false,
-      "repeat-delay": 10,
-
-      "messages": [
-        "",
-        "",
-        ""
-      ]
+      "repeat-delay": 15,
+      "messages": []
     },
 
-    "chat-log": true,
+    "chat-log": false,
+
     "auto-reconnect": true,
-    "auto-recconect-delay": 1000
-  
+    "auto-recconect-delay": 3000
   }
 }

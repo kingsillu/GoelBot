@@ -1,129 +1,106 @@
-const mineflayer = require('mineflayer');
-const Movements = require('mineflayer-pathfinder').Movements;
-const pathfinder = require('mineflayer-pathfinder').pathfinder;
-const { GoalBlock } = require('mineflayer-pathfinder').goals;
-const config = require('./settings.json');
-const express = require('express');
+const mineflayer = require("mineflayer");
+const express = require("express");
+const config = require("./settings.json");
 
 const app = express();
-
-// Express server to keep bot alive in platforms like Choreo
-app.get('/', (req, res) => {
-  res.send('Bot is running!');
+app.get("/", (req, res) => {
+  res.send("Bot is running!");
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`[SERVER] Express server started on port ${PORT}`);
+  console.log(`[SERVER] Running on port ${PORT}`);
 });
 
 function createBot() {
   const bot = mineflayer.createBot({
-    username: config['bot-account']['username'],
-    password: config['bot-account']['password'],
-    auth: config['bot-account']['type'],
+    username: config["bot-account"].username,
+    password: config["bot-account"].password,
+    auth: config["bot-account"].type,
     host: config.server.ip,
     port: config.server.port,
     version: config.server.version,
   });
 
-  // ⭐⭐⭐ KEEPALIVE FIX ⭐⭐⭐
+  // ⭐ KEEPALIVE FIX (Most Important)
+  bot.on("packet", (data, meta) => {
+    if (meta.name === "keep_alive") {
+      try {
+        bot._client.write("keep_alive", { keepAliveId: data.keepAliveId });
+      } catch {}
+    }
+  });
+
+  // ⭐ Reduce lag (Low CPU + Low RAM)
   if (bot.settings) {
     bot.settings.chatLengthLimit = 256;
-    bot.settings.checkTimeoutInterval = 60000; // Prevent out-of-order keepalive kicks
+    bot.settings.checkTimeoutInterval = 60000;
   }
 
-  bot.loadPlugin(pathfinder);
+  // ⭐ When bot joins
+  bot.once("spawn", () => {
+    console.log("[Bot] Joined server successfully!");
 
-  bot.once('spawn', () => {
-    console.log('\x1b[33m[AfkBot] Bot has joined the server\x1b[0m');
-
-    // AUTO AUTH
-    if (config.utils['auto-auth'].enabled) {
-      const password = config.utils['auto-auth'].password;
+    // AUTO LOGIN / REGISTER
+    if (config.utils["auto-auth"].enabled) {
+      const pass = config.utils["auto-auth"].password;
       setTimeout(() => {
-        bot.chat(`/register ${password} ${password}`);
-        bot.chat(`/login ${password}`);
-      }, 500);
+        bot.chat(`/register ${pass} ${pass}`);
+        bot.chat(`/login ${pass}`);
+      }, 800);
     }
 
-    // CHAT MESSAGE SPAMMER
-    if (config.utils['chat-messages'].enabled) {
-      const messages = config.utils['chat-messages']['messages'];
-      const delay = config.utils['chat-messages']['repeat-delay'];
+    // AUTO CHAT MESSAGES
+    if (config.utils["chat-messages"].enabled) {
+      const msgs = config.utils["chat-messages"].messages;
+      const sec = config.utils["chat-messages"]["repeat-delay"];
 
-      if (config.utils['chat-messages'].repeat) {
+      if (config.utils["chat-messages"].repeat) {
         let i = 0;
         setInterval(() => {
-          bot.chat(`${messages[i]}`);
-          i = (i + 1) % messages.length;
-        }, delay * 1000);
+          bot.chat(msgs[i]);
+          i = (i + 1) % msgs.length;
+        }, sec * 1000);
       } else {
-        messages.forEach(msg => bot.chat(msg));
+        msgs.forEach((m) => bot.chat(m));
       }
     }
 
-    // ANTI-AFK
-    if (config.utils['anti-afk'].enabled) {
+    // ⭐ LIGHTWEIGHT ANTI-AFK (NO CPU HEAVY MOVEMENT)
+    if (config.utils["anti-afk"].enabled) {
       setInterval(() => {
-        bot.setControlState('jump', true);
-        setTimeout(() => bot.setControlState('jump', false), 500);
-
-        const dirs = ['forward', 'back', 'left', 'right'];
-        const randDir = dirs[Math.floor(Math.random() * dirs.length)];
-
-        bot.setControlState(randDir, true);
-        setTimeout(() => bot.setControlState(randDir, false), 2000);
-
-      }, 15000);
-    }
-
-    // RANDOM WALKING
-    const mcData = require('minecraft-data')(bot.version);
-    const moves = new Movements(bot, mcData);
-
-    function moveRandomly() {
-      const x = bot.entity.position.x + (Math.random() * 6 - 3);
-      const z = bot.entity.position.z + (Math.random() * 6 - 3);
-      bot.pathfinder.setMovements(moves);
-      bot.pathfinder.setGoal(new GoalBlock(Math.floor(x), bot.entity.position.y, Math.floor(z)));
-    }
-    setInterval(moveRandomly, 30000);
-
-    // MOVE TO SPECIFIC POSITION
-    if (config.position.enabled) {
-      const pos = config.position;
-      bot.pathfinder.setMovements(moves);
-      bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
+        try {
+          bot.setControlState("jump", true);
+          setTimeout(() => bot.setControlState("jump", false), 150);
+        } catch {}
+      }, 20000); // Jump every 20s – ultra safe, ultra light
     }
   });
 
   // CHAT LOG
-  bot.on('chat', (username, msg) => {
-    if (config.utils['chat-log']) {
-      console.log(`[Chat] <${username}> ${msg}`);
+  bot.on("chat", (u, msg) => {
+    if (config.utils["chat-log"]) {
+      console.log(`[${u}] ${msg}`);
     }
   });
 
-  // DEATH HANDLER
-  bot.on('death', () => {
-    console.log('\x1b[33m[AfkBot] Bot died and respawned\x1b[0m');
+  // ON DEATH
+  bot.on("death", () => {
+    console.log("[Bot] Died and respawned!");
   });
 
   // AUTO RECONNECT
-  bot.on('end', () => {
-    console.log("\x1b[31m[ERROR] Bot disconnected! Reconnecting in 10 seconds...\x1b[0m");
-    setTimeout(() => createBot(), 10000);
+  bot.on("end", () => {
+    console.log("[Bot] Disconnected. Reconnecting in 5 seconds...");
+    setTimeout(createBot, 5000);
   });
 
-  // KICKED EVENT
-  bot.on('kicked', reason => {
-    console.log(`\x1b[33m[AfkBot] Bot was kicked. Reason: ${reason}\x1b[0m`);
+  bot.on("kicked", (reason) => {
+    console.log("[Bot] Kicked:", reason);
   });
 
-  // ERROR EVENT
-  bot.on('error', err => {
-    console.log(`\x1b[31m[ERROR] ${err.message}\x1b[0m`);
+  bot.on("error", (err) => {
+    console.log("[Bot Error]", err.message);
   });
 }
 
